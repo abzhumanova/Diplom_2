@@ -1,15 +1,22 @@
 package com.stellarburgers.client;
 
 import io.restassured.RestAssured;
+import io.restassured.filter.log.RequestLoggingFilter;
+import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.response.Response;
 
 public class StellarBurgersClient {
+
+    // Константы для базового URI и пути API
+    public static final String BASE_URI = "https://stellarburgers.nomoreparties.site";
+    public static final String API_PATH = "/api";
+
     static {
-        RestAssured.baseURI = "https://stellarburgers.nomoreparties.site";
-        RestAssured.basePath = "/api";
+        RestAssured.baseURI = BASE_URI;
+        RestAssured.basePath = API_PATH;
     }
 
-    public static io.restassured.response.Response registerUser(Object body) {
+    public static Response registerUser(Object body) {
         return RestAssured
                 .given()
                 .header("Content-Type", "application/json")
@@ -47,13 +54,18 @@ public class StellarBurgersClient {
     }
 
     public static Response createOrder(String token, Object body) {
+        // Создаём запрос с логированием запроса и ответа
         var req = RestAssured
                 .given()
+                .filter(new RequestLoggingFilter())   // <-- логирует тело и заголовки запроса
+                .filter(new ResponseLoggingFilter())  // <-- логирует тело и заголовки ответа
                 .header("Content-Type", "application/json")
                 .body(body);
+
         if (token != null && !token.isEmpty()) {
             req.header("Authorization", token);
         }
+
         return req
                 .when()
                 .post("/orders");
