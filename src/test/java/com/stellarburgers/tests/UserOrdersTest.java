@@ -21,20 +21,20 @@ import static org.hamcrest.Matchers.*;
 public class UserOrdersTest {
     private User user;
     private String token;
-    private Faker faker = new Faker();
+    private final Faker faker = new Faker();
 
     @Before
     public void setUp() {
         user = new User(faker.internet().emailAddress(), faker.internet().password(), faker.name().firstName());
-        Response r = UserSteps.create(user);
+        Response r = UserSteps.sendRegisterUserRequest(user);
         token = r.jsonPath().getString("accessToken");
-        OrderSteps.create(token, generateValidOrderRequest());
+        OrderSteps.sendCreateOrderRequest(token, generateValidOrderRequest());
     }
 
     @After
     public void tearDown() {
         if (token != null) {
-            UserSteps.delete(token).then().statusCode(anyOf(is(200), is(202)));
+            UserSteps.sendDeleteUserRequest(token).then().statusCode(anyOf(is(200), is(202)));
         }
     }
 
@@ -42,7 +42,7 @@ public class UserOrdersTest {
     @DisplayName("Получение заказов пользователя с авторизацией")
     @Description("Проверка успешного получения заказов пользователем при наличии авторизации")
     public void getOrdersAuth() {
-        OrderSteps.list(token)
+        OrderSteps.sendGetOrdersRequest(token)
                 .then().statusCode(200)
                 .body("orders", notNullValue());
     }
@@ -51,7 +51,7 @@ public class UserOrdersTest {
     @DisplayName("Получение заказов пользователя без авторизации")
     @Description("Проверка, что неавторизованный пользователь не может получить заказы и получает ошибку 401")
     public void getOrdersNoAuth() {
-        OrderSteps.list("")
+        OrderSteps.sendGetOrdersRequest("")
                 .then().statusCode(401)
                 .body("message", is("You should be authorised"));
     }

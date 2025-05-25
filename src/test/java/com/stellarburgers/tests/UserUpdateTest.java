@@ -17,7 +17,7 @@ public class UserUpdateTest {
 
     private User user;
     private String token;
-    private Faker faker = new Faker();
+    private final Faker faker = new Faker();
 
     @Before
     public void setUp() {
@@ -27,7 +27,7 @@ public class UserUpdateTest {
                 faker.internet().password(),
                 faker.name().firstName()
         );
-        Response r = UserSteps.create(user);
+        Response r = UserSteps.sendRegisterUserRequest(user);
         token = r.jsonPath().getString("accessToken");
     }
 
@@ -35,7 +35,7 @@ public class UserUpdateTest {
     public void tearDown() {
         // Удаляем пользователя (если токен есть)
         if (token != null) {
-            UserSteps.delete(token)
+            UserSteps.sendDeleteUserRequest(token)
                     .then().statusCode(anyOf(is(200), is(202)));
         }
     }
@@ -49,7 +49,7 @@ public class UserUpdateTest {
         UpdateUserRequest upd = new UpdateUserRequest()
                 .setName(newName);
 
-        UserSteps.update(token, upd)
+        UserSteps.sendUpdateUserRequest(token, upd)
                 .then()
                 .statusCode(200)
                 .body("user.name", is(newName));
@@ -63,7 +63,7 @@ public class UserUpdateTest {
         UpdateUserRequest upd = new UpdateUserRequest()
                 .setEmail(newEmail);
 
-        UserSteps.update(token, upd)
+        UserSteps.sendUpdateUserRequest(token, upd)
                 .then()
                 .statusCode(200)
                 .body("user.email", is(newEmail));
@@ -76,7 +76,7 @@ public class UserUpdateTest {
         UpdateUserRequest upd = new UpdateUserRequest()
                 .setEmail(faker.internet().emailAddress());
 
-        UserSteps.update("", upd)
+        UserSteps.sendUpdateUserRequest("", upd)
                 .then()
                 .statusCode(401)
                 .body("message", is("You should be authorised"));

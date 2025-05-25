@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.*;
 public class UserRegistrationTest {
     private User user;
     private String token;
-    private Faker faker = new Faker();
+    private final Faker faker = new Faker();
 
     @Before
     public void setUp() {
@@ -25,7 +25,7 @@ public class UserRegistrationTest {
     @After
     public void tearDown() {
         if (token != null) {
-            UserSteps.delete(token).then().statusCode(anyOf(is(200), is(202)));
+            UserSteps.sendDeleteUserRequest(token).then().statusCode(anyOf(is(200), is(202)));
         }
     }
 
@@ -33,7 +33,7 @@ public class UserRegistrationTest {
     @DisplayName("Создание уникального пользователя")
     @Description("Проверка успешного создания пользователя с уникальными учетными данными.")
     public void createUniqueUser() {
-        Response r = UserSteps.create(user);
+        Response r = UserSteps.sendRegisterUserRequest(user);
         r.then().statusCode(200).body("success", is(true));
         token = r.jsonPath().getString("accessToken");
     }
@@ -42,10 +42,10 @@ public class UserRegistrationTest {
     @DisplayName("Создание пользователя с дублирующимися данными")
     @Description("Проверка, что попытка создать пользователя с существующими учетными данными приводит к ошибке.")
     public void createDuplicateUser() {
-        Response r = UserSteps.create(user);
+        Response r = UserSteps.sendRegisterUserRequest(user);
         r.then().statusCode(200);
         token = r.jsonPath().getString("accessToken");
-        UserSteps.create(user)
+        UserSteps.sendRegisterUserRequest(user)
                 .then().statusCode(403)
                 .body("message", containsString("User already exists"));
     }
@@ -55,7 +55,7 @@ public class UserRegistrationTest {
     @Description("Проверка, что создание пользователя без имени приводит к ошибке.")
     public void createUserMissingName() {
         User bad = new User(faker.internet().emailAddress(), faker.internet().password(), null);
-        UserSteps.create(bad)
+        UserSteps.sendRegisterUserRequest(bad)
                 .then().statusCode(403)
                 .body("message", is("Email, password and name are required fields"));
     }
@@ -65,7 +65,7 @@ public class UserRegistrationTest {
     @Description("Проверка, что создание пользователя без email приводит к ошибке.")
     public void createUserMissingEmail() {
         User bad = new User(null, faker.internet().password(), faker.name().firstName());
-        UserSteps.create(bad)
+        UserSteps.sendRegisterUserRequest(bad)
                 .then().statusCode(403)
                 .body("message", is("Email, password and name are required fields"));
     }
@@ -75,7 +75,7 @@ public class UserRegistrationTest {
     @Description("Проверка, что создание пользователя без пароля приводит к ошибке.")
     public void createUserMissingPassword() {
         User bad = new User(faker.internet().emailAddress(), null, faker.name().firstName());
-        UserSteps.create(bad)
+        UserSteps.sendRegisterUserRequest(bad)
                 .then().statusCode(403)
                 .body("message", is("Email, password and name are required fields"));
     }

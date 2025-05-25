@@ -8,23 +8,24 @@ import io.qameta.allure.Step;
 import io.restassured.response.Response;
 
 public class UserSteps {
-    @Step("Регистрируем пользователя {user.email}")
-    public static Response create(User user) {
+
+    @Step("Отправляем запрос на регистрацию пользователя")
+    public static Response sendRegisterUserRequest(User user) {
         return StellarBurgersClient.registerUser(user);
     }
 
-    @Step("Логинимся как {email}")
-    public static Response login(String email, String password) {
+    @Step("Отправляем запрос на логин пользователя")
+    public static Response sendLoginUserRequest(String email, String password) {
         return StellarBurgersClient.loginUser(new LoginRequest(email, password));
     }
 
-    @Step("Обновляем пользователя с токеном {token}")
-    public static Response update(String token, UpdateUserRequest req) {
+    @Step("Отправляем запрос на обновление пользователя")
+    public static Response sendUpdateUserRequest(String token, UpdateUserRequest req) {
         return StellarBurgersClient.updateUser(token, req);
     }
 
-    @Step("Удаляем пользователя с токеном {token}")
-    public static Response delete(String token) {
+    @Step("Отправляем запрос на удаление пользователя")
+    public static Response sendDeleteUserRequest(String token) {
         return StellarBurgersClient.deleteUser(token);
     }
 }
